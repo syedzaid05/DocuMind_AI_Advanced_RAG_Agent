@@ -1,0 +1,5 @@
+{"question": "Where is the Eiffel Tower located?", "expected_source": "sample_corpus.pdf", "expected_page": 1, "expected_keywords": ["Paris", "France"]}
+{"question": "How tall is the Eiffel Tower?", "expected_source": "sample_corpus.pdf", "expected_page": 1, "expected_keywords": ["330"]}
+{"question": "Who designed the Eiffel Tower?", "expected_source": "sample_corpus.pdf", "expected_page": 1, "expected_keywords": ["Gustave Eiffel"]}
+{"question": "When was the Louvre museum opened?", "expected_source": "sample_corpus.pdf", "expected_page": 2, "expected_keywords": ["1793"]}
+{"question": "Who designed the Louvre pyramid?", "expected_source": "sample_corpus.pdf", "expected_page": 2, "expected_keywords": ["I. M. Pei", "Pei"]}
