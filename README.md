@@ -6,6 +6,10 @@ A document-question-answering agent that ingests PDFs and answers questions with
 answer verification, and a Groq-primary / Gemini-fallback LLM chain — all wrapped
 in a Streamlit chat UI.
 
+> **Last updated:** 2026-10-18 · Now deployable to Streamlit Community Cloud
+> (secrets-based config, no `.env` required there). See
+> [Deploy to Streamlit Cloud](#deploy-to-streamlit-cloud).
+
 ---
 
 ## Table of contents
@@ -15,6 +19,7 @@ in a Streamlit chat UI.
 - [Project structure](#project-structure)
 - [Requirements](#requirements)
 - [Setup](#setup)
+- [Deploy to Streamlit Cloud](#deploy-to-streamlit-cloud)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [How it works](#how-it-works)
@@ -84,6 +89,8 @@ DocuMind_AI_Advanced_RAG_Agent/
 ├── verify_keys.py             # Standalone API-key checker for Groq + Gemini
 ├── requirements.txt
 ├── README.md
+├── .streamlit/
+│   └── config.toml           # Streamlit UI theme / browser stats
 ├── docs/
 │   └── ARCHITECTURE.md        # Deep dive: diagrams, sequence flows, tradeoffs
 ├── .env                       # Your secrets and settings (gitignored)
@@ -145,9 +152,53 @@ python verify_keys.py
 
 ---
 
+## Deploy to Streamlit Cloud
+
+The app is fully compatible with [Streamlit Community Cloud](https://share.streamlit.io/).
+
+**1. Push the repo to GitHub** (make sure `.venv/`, `data/` and `.env` are
+gitignored — they already are).
+
+**2. Create the app** at <https://share.streamlit.io>:
+
+- Repository: your fork/repo
+- Branch: `main`
+- Main file path: `app.py`
+
+**3. Add secrets** — in **Manage app → Settings → Secrets**, paste (toml):
+
+```toml
+GROQ_API_KEY = "gsk_..."
+GEMINI_API_KEY = "AIza..."
+```
+
+`src/config.py` reads `st.secrets` automatically on Streamlit Cloud (no `.env`
+file exists there), and falls back to `.env` locally. All other settings from
+the [Configuration](#configuration) table can also be placed in secrets.
+
+**4. Deploy.** First deployment takes several minutes: the container installs
+`requirements.txt` and downloads bge-base + bge-reranker weights on first query.
+
+### Cloud-specific notes
+
+- **Ephemeral storage** — each app container is ephemeral. The ChromaDB index,
+  `data/parents.json` and caches reset when the app sleeps or reboots, so
+  re-index your PDFs after a restart (they are lost too — upload again).
+- **Free tier memory (~1 GB)** — running bge-base + bge-reranker + torch inside
+  1 GB is tight. If the app crashes with `MemoryError` on the free tier,
+  disable **Verify grounding** (skips the LLM verifier), turn off **HyDE**,
+  or reduce **Reranked chunks**. Paid Cloud (1 GB→2 GB+ resources) is fine.
+- **Model weights are re-downloaded** after every reboot; keep expectations of
+  a slow first answer (~2–5 min) after each wake-up.
+- **No `packages.txt` needed** — everything is pure pip.
+- The API keys are never logged; rotate immediately if exposed.
+
+---
+
 ## Configuration
 
-All settings live in `.env` (loaded by `src/config.py`). Anything omitted uses a default.
+All settings are read from `.env` (local) or `st.secrets` (Streamlit Cloud), loaded by
+`src/config.py`. Anything omitted uses a default.
 
 | Variable | Default | Description |
 |---|---|---|

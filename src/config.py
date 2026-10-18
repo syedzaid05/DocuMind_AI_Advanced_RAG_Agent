@@ -29,6 +29,22 @@ def load_env(path: Path = ENV_PATH) -> None:
 
 
 load_env()
+
+
+def load_secrets() -> None:
+    """Load st.secrets (Streamlit Cloud) into env if .env is absent."""
+    try:
+        import streamlit as st
+
+        for key, value in st.secrets.items():
+            if isinstance(value, (str, int, float, bool)):
+                os.environ.setdefault(key, str(value))
+    except Exception:  # noqa: BLE001 - no secrets available (local/CLI)
+        pass
+
+
+if not ENV_PATH.exists():
+    load_secrets()
 for _d in (DATA_DIR, CHROMA_DIR, UPLOAD_DIR, CACHE_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
